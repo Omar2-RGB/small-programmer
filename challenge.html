@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>🧩 تحدي اليوم - المبرمج الصغير</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #f6e58d;
+      margin: 0; padding: 20px;
+      color: #2d3436;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: center;
+    }
+    header {
+      background-color: #e1b12c;
+      color: white;
+      padding: 15px 30px;
+      font-size: 2.5rem;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(225,177,44,0.7);
+      width: 100%;
+      max-width: 600px;
+    }
+    .challenge-box {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+      position: relative;
+    }
+    select, input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      border: 2px solid #e1b12c;
+      background-color: #ffeaa7;
+      width: 80%;
+      text-align: center;
+    }
+    button {
+      background-color: #e1b12c;
+      color: white;
+      font-size: 1.1rem;
+      padding: 10px 25px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: 700;
+    }
+    button:hover {
+      background-color: #d4a017;
+    }
+    .result {
+      margin-top: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      min-height: 40px;
+    }
+    .correct { color: #00b894; }
+    .incorrect { color: #d63031; }
+    .points {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      color: #0984e3;
+      font-weight: 700;
+    }
+    .rank {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.3rem;
+      color: white;
+      background-color: #fdcb6e;
+    }
+    .badge {
+      margin-top: 15px;
+      font-size: 1.4rem;
+    }
+    #animation {
+      width: 120px;
+      margin: 20px auto 0;
+      display: none;
+    }
+    #timer {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #d35400;
+      font-weight: 700;
+    }
+    #userNameDisplay {
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      color: #6c5ce7;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header>🧩 تحدي اليوم - المبرمج الصغير</header>
+
+  <div class="challenge-box">
+
+    <div id="userNameDisplay"></div>
+
+    <select id="level">
+      <option value="easy">🐣 مبتدئ</option>
+      <option value="medium">🐤 متوسط</option>
+      <option value="hard">🦅 متقدم</option>
+    </select>
+
+    <div id="challengeText" style="margin-top: 15px;"></div>
+
+    <input type="text" id="answer" placeholder="اكتب الإجابة هنا..." />
+    <button id="checkBtn">تحقق من الإجابة</button>
+
+    <div class="result" id="result"></div>
+    <div id="timer"></div>
+    <div class="points" id="points">نقاطك: 0</div>
+    <div class="rank" id="rank">🏅 لقبك: مبتدئ صغير</div>
+    <div class="badge" id="badge"></div>
+
+    <button id="shareBtn" style="display:none; margin-top:15px;">📤 شارك نتيجتك</button>
+
+    <img id="animation" src="" alt="ردة فعل" />
+
+    <audio id="sound-true" src="True.m4a"></audio>
+    <audio id="sound-false" src="Valse.m4a"></audio>
+  </div>
+
+<script>
+  let points = 0;
+  let timerInterval;
+  let timer = 60;
+
+  const userNameDisplay = document.getElementById("userNameDisplay");
+  const levelSelect = document.getElementById("level");
+  const challengeText = document.getElementById("challengeText");
+  const answerInput = document.getElementById("answer");
+  const checkBtn = document.getElementById("checkBtn");
+  const resultDiv = document.getElementById("result");
+  const pointsDiv = document.getElementById("points");
+  const rankDiv = document.getElementById("rank");
+  const badgeDiv = document.getElementById("badge");
+  const animation = document.getElementById("animation");
+  const timerDiv = document.getElementById("timer");
+  const shareBtn = document.getElementById("shareBtn");
+
+  const soundTrue = document.getElementById("sound-true");
+  const soundFalse = document.getElementById("sound-false");
+
+  const challenges = {
+    easy: {
+      text: 'هل تستطيع كتابة برنامج يطبع اسمك؟',
+      example: 'print("اسمي عمر")',
+      validate: (input) => /print\s*\(\s*["'][^"']+["']\s*\)/i.test(input)
+    },
+    medium: {
+      text: 'اكتب برنامج يطبع مجموع 3 + 5',
+      example: 'print(3 + 5)',
+      validate: (input) => input.replace(/\s/g, '') === 'print(3+5)'
+    },
+    hard: {
+      text: 'اكتب برنامج يتحقق إذا كان الرقم أكبر من 10',
+      example: 'if x > 10:\n  print("كبير")',
+      validate: (input) => /if\s+.+>\s*10\s*:\s*[\n\r]?[\s]*print/i.test(input)
+    }
+  };
+
+  function loadData() {
+    const savedPoints = localStorage.getItem("tinyCoderPoints");
+    const savedName = localStorage.getItem("tinyCoderName");
+
+    if (!savedName) {
+      alert("يرجى أولاً إنشاء بطاقتك في صفحة البطاقة!");
+      // يمكن هنا توجيه المستخدم لصفحة البطاقة مثلاً:
+      // window.location.href = "card.html";
+      return;
+    }
+
+    points = savedPoints ? parseInt(savedPoints) : 0;
+    pointsDiv.textContent = "نقاطك: " + points;
+    userNameDisplay.textContent = `مرحباً، ${savedName}! 🎉`;
+    updateRank();
+    loadChallenge();
+  }
+
+  function loadChallenge() {
+    const level = levelSelect.value;
+    const c = challenges[level];
+    challengeText.innerHTML = `
+      <p>${c.text}</p>
+      <p><strong>مثال:</strong> <code>${c.example}</code></p>
+    `;
+    answerInput.value = '';
+    resultDiv.textContent = '';
+    animation.style.display = 'none';
+    shareBtn.style.display = 'none';
+    resetTimer();
+    startTimer();
+  }
+
+  function updateRank() {
+    if (points >= 101) {
+      rankDiv.textContent = "🏅 لقبك: نجم الأكواد";
+      rankDiv.style.backgroundColor = "#f1c40f";
+      badgeDiv.textContent = "🌟 حصلت على شارة بطل البرمجة!";
+    } else if (points >= 51) {
+      rankDiv.textContent = "🏅 لقبك: مبرمج شجاع";
+      rankDiv.style.backgroundColor = "#74b9ff";
+      badgeDiv.textContent = "🏅 حصلت على شارة المبرمج الشجاع";
+    } else if (points >= 21) {
+      rankDiv.textContent = "🏅 لقبك: مغامر كود";
+      rankDiv.style.backgroundColor = "#e17055";
+      badgeDiv.textContent = "🎖️ حصلت على شارة المغامر";
+    } else {
+      rankDiv.textContent = "🏅 لقبك: مبتدئ صغير";
+      rankDiv.style.backgroundColor = "#fdcb6e";
+      badgeDiv.textContent = "";
+    }
+  }
+
+  function startTimer() {
+    timer = 60;
+    timerDiv.textContent = `⏱️ الوقت المتبقي: ${timer} ثانية`;
+    timerInterval = setInterval(() => {
+      timer--;
+      timerDiv.textContent = `⏱️ الوقت المتبقي: ${timer} ثانية`;
+      if (timer <= 0) {
+        clearInterval(timerInterval);
+        timerDiv.textContent = "⏰ انتهى الوقت!";
+        checkBtn.disabled = true;
+        soundFalse.play();
+      }
+    }, 1000);
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    timerDiv.textContent = "";
+    checkBtn.disabled = false;
+  }
+
+  checkBtn.onclick = () => {
+    clearInterval(timerInterval);
+    const level = levelSelect.value;
+    const input = answerInput.value.trim();
+    const isCorrect = challenges[level].validate(input);
+
+    if (isCorrect) {
+      resultDiv.textContent = "✅ إجابة صحيحة! أحسنت!";
+      resultDiv.className = "result correct";
+      points += 10;
+      localStorage.setItem("tinyCoderPoints", points);
+      pointsDiv.textContent = "نقاطك: " + points;
+      updateRank();
+      animation.src = "hapy.jpg"; // ضع هنا مسار صورة الطفل الفرحة
+      animation.style.display = 'block';
+      soundTrue.play();
+      shareBtn.style.display = "inline-block";
+    } else {
+      resultDiv.textContent = "❌ حاول مرة أخرى.";
+      resultDiv.className = "result incorrect";
+      animation.src = "sad.jpg"; // ضع هنا مسار صورة الطفل الحزين
+      animation.style.display = 'block';
+      soundFalse.play();
+      shareBtn.style.display = "none";
+    }
+  };
+
+  levelSelect.addEventListener("change", () => {
+    loadChallenge();
+    shareBtn.style.display = "none";
+  });
+
+  shareBtn.onclick = () => {
+    const savedName = localStorage.getItem("tinyCoderName") || "صديقي";
+    const msg = `أنا ${savedName} جمعت ${points} نقطة بلعبة المبرمج الصغير! جربها أنت كمان 🤖`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(msg).then(() => {
+        alert("تم نسخ رسالتك! يمكنك الآن لصقها ومشاركتها مع الأهل أو الأصدقاء.");
+      });
+    } else {
+      alert("جهازك لا يدعم نسخ النص تلقائياً، يرجى نسخه يدوياً:\n\n" + msg);
+    }
+  };
+
+  // تحميل بيانات المستخدم والنقاط عند فتح الصفحة
+  loadData();
+</script>
+
+</body>
+</html>

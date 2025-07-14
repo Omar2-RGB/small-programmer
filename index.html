@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>المبرمج الصغير - عالم المرح والبرمجة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    /* التصميم العام */
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      margin: 0; padding: 0;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      text-align: center;
+      position: relative;
+    }
+
+    header {
+      font-size: 3.8rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    /* الصورة الرئيسية */
+    .mascot {
+      width: 220px;
+      height: 220px;
+      margin-bottom: 30px;
+      animation: bounce 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.7));
+      user-select: none;
+      cursor: default;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
+
+    /* أزرار التنقل */
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      max-width: 600px;
+      width: 90%;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.25rem;
+      border-radius: 50px;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 8px 20px rgba(255,118,145,0.4);
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      flex: 1 1 180px;
+      min-width: 180px;
+    }
+
+    .btn:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 14px 35px rgba(255,118,145,0.6);
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 5px 15px rgba(255,118,145,0.3);
+    }
+
+    /* زر الصوت */
+    #soundToggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 2px solid white;
+      border-radius: 30px;
+      padding: 12px 22px;
+      font-size: 1rem;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      z-index: 1000;
+    }
+    #soundToggle:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+      border-color: #ff7eb3;
+    }
+
+    /* نجوم متطايرة */
+    .star {
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: radial-gradient(circle, #fff, #ff7eb3);
+      border-radius: 50%;
+      filter: drop-shadow(0 0 8px #ff7eb3);
+      opacity: 0;
+      animation: star-fall 3s linear forwards;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes star-fall {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(350px) scale(0.3);
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        font-size: 2.8rem;
+        margin-bottom: 15px;
+      }
+      .btn {
+        font-size: 1.1rem;
+        min-width: 140px;
+        padding: 12px 25px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <button id="soundToggle">🔊 تشغيل الصوت</button>
+
+  <header>🚀 مرحباً بك في المبرمج الصغير!</header>
+
+  <img
+    src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png"
+    alt="شخصية المبرمج الصغير"
+    class="mascot"
+    draggable="false"
+  />
+
+  <div class="buttons">
+    <button class="btn" onclick="location.href='start.html'">اصنع بطاقتك</button>
+    <button class="btn" onclick="location.href='challenge.html'">تحدي اليوم</button>
+    <button class="btn" onclick="location.href='learn-code.html'">تعلم كود</button>
+    <button class="btn" onclick="location.href='stories.html'">قصص مبرمجين</button>
+    <button class="btn" onclick="location.href='my-projects.html'">مشاريعي الأولى</button>
+  </div>
+
+  <script>
+    const clickSound = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
+    let soundOn = false;
+
+    const soundToggle = document.getElementById('soundToggle');
+    soundToggle.addEventListener('click', () => {
+      soundOn = !soundOn;
+      soundToggle.textContent = soundOn ? '🔇 إيقاف الصوت' : '🔊 تشغيل الصوت';
+    });
+
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (soundOn) {
+          clickSound.currentTime = 0;
+          clickSound.play();
+        }
+      });
+    });
+
+    function createStar() {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      star.style.left = Math.random() * window.innerWidth + 'px';
+      star.style.top = '0px';
+      star.style.animationDuration = 2000 + Math.random() * 2000 + 'ms';
+      document.body.appendChild(star);
+      star.addEventListener('animationend', () => star.remove());
+    }
+
+    let starInterval = setInterval(createStar, 300);
+    setTimeout(() => clearInterval(starInterval), 5000);
+  </script>
+
+</body>
+</html>
